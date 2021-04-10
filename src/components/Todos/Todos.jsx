@@ -10,7 +10,7 @@ const Todos = () => {
 	const todoRef = firestore.collection(`users/${auth.currentUser.uid}/todos`);
 
 	const [todos] = useCollectionData(todoRef, { idField: "id" });
-	console.log(todos?.length);
+
 	const signOut = () => auth.signOut();
 
 	const addTodo = e => {
