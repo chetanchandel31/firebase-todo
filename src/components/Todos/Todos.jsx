@@ -4,18 +4,24 @@ import firebase from "../../firebase";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import Todo from "./Todo/Todo";
 
-const Todos = () => {
+const Todos = ({ guestUser, setGuestUser }) => {
 	const [input, setInput] = useState("");
 
-	const todoRef = firestore.collection(`users/${auth.currentUser.uid}/todos`);
+	const todoRef = firestore.collection(`users/${auth?.currentUser?.uid}/todos`);
+	const guestCollectionRef = firestore.collection(`users/Z7kfvIWF7sjpGhd5fQLB/todos`);
+	const collectionRef = guestUser ? guestCollectionRef : todoRef;
 
-	const [todos] = useCollectionData(todoRef, { idField: "id" });
+	const [todos] = useCollectionData(collectionRef, { idField: "id" });
 
-	const signOut = () => auth.signOut();
+	const signOut = () => {
+		if (guestUser) return setGuestUser(false);
+		auth.signOut();
+	};
 
 	const addTodo = e => {
 		e.preventDefault();
-		todoRef.add({
+		if (!input) return alert("do you really want to remember to do nothing? 🤔");
+		collectionRef.add({
 			todo: input,
 			createdAt: firebase.firestore.FieldValue.serverTimestamp(),
 			complete: false,
@@ -26,14 +32,14 @@ const Todos = () => {
 	return (
 		<>
 			<button onClick={signOut}>sign out</button>
-
+			<br /> <br />
 			<form onSubmit={e => addTodo(e)}>
 				<input onChange={e => setInput(e.target.value)} value={input} />
 				<button type="submit">+</button>
 			</form>
 			<div>
 				{todos?.map(todo => (
-					<Todo key={todo.id} {...todo} />
+					<Todo key={todo.id} {...todo} collectionRef={collectionRef} />
 				))}
 			</div>
 		</>
